@@ -14,6 +14,7 @@ public class Account extends BaseEntity{
     @MapsId
     @JoinColumn(name = "user_id")
     private User user;
+    @Column(unique = true)
     private String accountNumber;
     @Enumerated(EnumType.STRING)
     private AccountType type;
