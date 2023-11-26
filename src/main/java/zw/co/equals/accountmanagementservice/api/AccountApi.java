@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import zw.co.equals.accountmanagementservice.dto.AccountDto;
+import zw.co.equals.accountmanagementservice.dto.UpdateAccountTypeRequest;
 import zw.co.equals.accountmanagementservice.service.AccountService;
 
 @RestController
@@ -23,6 +24,11 @@ public class AccountApi {
     @PostMapping("/create")
     public ResponseEntity<AccountDto> create(@RequestBody AccountDto accountDto) {
         return new ResponseEntity<>(accountService.create(accountDto), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/update-account-type")
+    public ResponseEntity<AccountDto> updateAccountType(@RequestBody UpdateAccountTypeRequest updateAccountTypeRequest) {
+        return new ResponseEntity<>(accountService.updateAccountType(updateAccountTypeRequest), HttpStatus.OK);
     }
 
 
