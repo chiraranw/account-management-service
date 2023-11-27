@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import zw.co.equals.accountmanagementservice.dto.AccountDto;
+import zw.co.equals.accountmanagementservice.dto.UpdateAccountResponse;
 import zw.co.equals.accountmanagementservice.dto.UpdateAccountTypeRequest;
 import zw.co.equals.accountmanagementservice.service.AccountService;
 
@@ -27,7 +28,7 @@ public class AccountApi {
     }
 
     @PostMapping("/update-account-type")
-    public ResponseEntity<AccountDto> updateAccountType(@RequestBody UpdateAccountTypeRequest updateAccountTypeRequest) {
+    public ResponseEntity<UpdateAccountResponse> updateAccountType(@RequestBody UpdateAccountTypeRequest updateAccountTypeRequest) {
         return new ResponseEntity<>(accountService.updateAccountType(updateAccountTypeRequest), HttpStatus.OK);
     }
 

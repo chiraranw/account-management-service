@@ -2,13 +2,11 @@ package zw.co.equals.accountmanagementservice.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-import zw.co.equals.accountmanagementservice.dto.AccountDto;
-import zw.co.equals.accountmanagementservice.dto.Request;
-import zw.co.equals.accountmanagementservice.dto.RequestType;
-import zw.co.equals.accountmanagementservice.dto.UpdateAccountTypeRequest;
+import zw.co.equals.accountmanagementservice.dto.*;
 import zw.co.equals.accountmanagementservice.exception.AccountNotFoundException;
 import zw.co.equals.accountmanagementservice.exception.InvalidRequestException;
 import zw.co.equals.accountmanagementservice.model.Account;
@@ -41,19 +39,20 @@ public class AccountServiceImpl implements AccountService {
         Account account = modelMapper.map(accountDto, Account.class);
         Account createdAccount = accountRepository.save(account);
         log.info("Successfully created an account: {}", createdAccount);
+        accountRepository.flush();
 
-        CompletableFuture.runAsync(()->rabbitMQService
+       rabbitMQService
                 .creditAccount(Request.builder()
                         .accountNumber(accountDto.getAccountNumber())
                         .requestType(RequestType.CREDIT)
                         .amount(new BigDecimal(10)) // TODO: 27/11/2023 from db
-                        .build())
-        );
+                        .build());
+
         return modelMapper.map(createdAccount, AccountDto.class);
     }
 
     @Override
-    public AccountDto updateAccountType(UpdateAccountTypeRequest updateAccountTypeRequest) {
+    public UpdateAccountResponse updateAccountType(UpdateAccountTypeRequest updateAccountTypeRequest) {
 
         log.info("Updating account type for: {} ", updateAccountTypeRequest.getAccountType());
         Account account = accountRepository
@@ -67,6 +66,10 @@ public class AccountServiceImpl implements AccountService {
         account.setType(AccountType.valueOf(updateAccountTypeRequest.getAccountType()));
         accountRepository.save(account);
         log.info("Account has been updated successfully: {}", account);
-        return modelMapper.map(account, AccountDto.class);
+        return UpdateAccountResponse.builder()
+                .accountType(account.getType())
+                .status(HttpStatus.OK.value())
+                .accountNumber(account.getAccountNumber())
+                .build();
     }
 }
