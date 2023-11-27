@@ -3,7 +3,11 @@ package zw.co.equals.accountmanagementservice.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import zw.co.equals.accountmanagementservice.dto.AccountDto;
+import zw.co.equals.accountmanagementservice.dto.Request;
+import zw.co.equals.accountmanagementservice.dto.RequestType;
 import zw.co.equals.accountmanagementservice.dto.UpdateAccountTypeRequest;
 import zw.co.equals.accountmanagementservice.exception.AccountNotFoundException;
 import zw.co.equals.accountmanagementservice.exception.InvalidRequestException;
@@ -11,6 +15,10 @@ import zw.co.equals.accountmanagementservice.model.Account;
 import zw.co.equals.accountmanagementservice.model.AccountType;
 import zw.co.equals.accountmanagementservice.repository.AccountRepository;
 import zw.co.equals.accountmanagementservice.service.AccountService;
+import zw.co.equals.accountmanagementservice.service.RabbitMQService;
+
+import java.math.BigDecimal;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -18,18 +26,29 @@ public class AccountServiceImpl implements AccountService {
 
     private final ModelMapper modelMapper;
     private final AccountRepository accountRepository;
+    private final RabbitMQService rabbitMQService;
 
-    public AccountServiceImpl(ModelMapper modelMapper, AccountRepository accountRepository) {
+    public AccountServiceImpl(ModelMapper modelMapper, AccountRepository accountRepository, RabbitMQService rabbitMQService) {
         this.modelMapper = modelMapper;
         this.accountRepository = accountRepository;
+        this.rabbitMQService = rabbitMQService;
     }
 
     @Override
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public AccountDto create(AccountDto accountDto) {
         log.info("Creating an account: {}", accountDto);
         Account account = modelMapper.map(accountDto, Account.class);
         Account createdAccount = accountRepository.save(account);
         log.info("Successfully created an account: {}", createdAccount);
+
+        CompletableFuture.runAsync(()->rabbitMQService
+                .creditAccount(Request.builder()
+                        .accountNumber(accountDto.getAccountNumber())
+                        .requestType(RequestType.CREDIT)
+                        .amount(new BigDecimal(10)) // TODO: 27/11/2023 from db
+                        .build())
+        );
         return modelMapper.map(createdAccount, AccountDto.class);
     }
 
