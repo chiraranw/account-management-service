@@ -1,5 +1,6 @@
 package zw.co.equals.accountmanagementservice.api;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +24,7 @@ public class AccountApi {
 
 
     @PostMapping("/create")
-    public ResponseEntity<AccountDto> create(@RequestBody AccountDto accountDto) {
+    public ResponseEntity<AccountDto> create(@Valid @RequestBody AccountDto accountDto) {
         return new ResponseEntity<>(accountService.create(accountDto), HttpStatus.CREATED);
     }
 

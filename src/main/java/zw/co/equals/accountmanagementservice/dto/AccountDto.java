@@ -1,7 +1,6 @@
 package zw.co.equals.accountmanagementservice.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -13,13 +12,15 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class AccountDto extends BaseDto{
     @NotBlank
+    @Size(min = 13, message = "Account min length is 13")
+    @Size(max = 13, message = "Account max length is 13")
     private String accountNumber;
     @NotBlank
     private String type;
     private String status;
     @NotBlank
     private String description;
-    @NotBlank
+    @NotNull
     private BigDecimal currentBalance;
     @NotNull
     private UserDto user;
